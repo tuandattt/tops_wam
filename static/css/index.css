@@ -42,7 +42,7 @@ figcaption{font-size:.92rem;color:var(--muted);margin:10px auto 0;max-width:860p
 
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
 .stats div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px 10px;text-align:center}
-.stats b{display:block;font-family:"Google Sans",sans-serif;font-size:2rem;color:var(--accent);line-height:1.1}
+.stats b{display:block;font-family:"Google Sans",sans-serif;font-size:2rem;color:#76b900;line-height:1.1}
 .stats span{font-size:.85rem;color:var(--muted)}
 
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0}
