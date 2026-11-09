@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOPS-WAM: Trajectory-level On-Policy Self-distillation for World Action Models</title>
+<meta name="description" content="TOPS-WAM post-trains world action models by letting the model teach itself with hindsight: a teacher that reads the demonstration's future video supervises the student on its own sampled trajectories, via the energy score.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&family=Castoro&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="static/css/index.css">
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="topnav" aria-label="Sections">
+  <a href="#abstract">Abstract</a>
+  <a href="#method">Method</a>
+  <a href="#results">Results</a>
+  <a href="#videos">Videos</a>
+  <a href="#bibtex">BibTeX</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="title">TOPS-WAM</h1>
+    <p class="subtitle">Trajectory-level On-Policy Self-distillation for World Action Models</p>
+
+    <!-- TODO: replace with real author names / links -->
+    <p class="authors">
+      <span>First Author<sup>1</sup></span>
+      <span>Second Author<sup>1</sup></span>
+      <span>Third Author<sup>2</sup></span>
+    </p>
+    <p class="affils"><span><sup>1</sup>Institution 1</span> <span><sup>2</sup>Institution 2</span></p>
+    <p class="venue">CVPR 2027 (under review)</p>
+
+    <div class="buttons">
+      <!-- TODO: fill in hrefs when available -->
+      <a class="btn" href="#" aria-disabled="true">Paper</a>
+      <a class="btn" href="#" aria-disabled="true">arXiv</a>
+      <a class="btn" href="#" aria-disabled="true">Code</a>
+      <a class="btn" href="#videos">Videos</a>
+    </div>
+
+    <figure class="teaser">
+      <video class="autoplay" muted loop playsinline preload="metadata" poster="media/fig/win_task19_trial0_strip.png">
+        <source src="media/video/win_task19_trial0.mp4" type="video/mp4">
+      </video>
+      <figcaption><b>Same initial state, different outcome.</b> Rollouts on LIBERO-90 from the SFT policy and from TOPS-WAM.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<main>
+<section id="stats" class="wrap">
+  <div class="stats">
+    <div><b>85.2%</b><span>LIBERO-90 success<br>(SFT 78.9%)</span></div>
+    <div><b>+6.3</b><span>points over SFT,<br>action expert only</span></div>
+    <div><b>0.2%</b><span>extra parameters,<br>teacher-only</span></div>
+    <div><b>0</b><span>environment rewards<br>needed</span></div>
+  </div>
+</section>
+
+<section id="abstract" class="wrap narrow">
+  <h2>Abstract</h2>
+  <p>World action models (WAMs) have shown promising generalization and data efficiency in robot manipulation by coupling action generation with predictions of future visual dynamics. Translating these capabilities into reliable task execution, however, remains a challenge for existing post-training methods. Offline supervised fine-tuning provides dense supervision on expert trajectories but offers limited coverage of states arising from the policy's own mistakes, and task-specific adaptation can compromise pretrained capabilities. On-policy reinforcement learning addresses this coverage gap, yet sparse task rewards make exploration and credit assignment difficult, while dense reward shaping still provides scalar evaluations rather than direct action targets.</p>
+  <p>We introduce <b>TOPS-WAM</b>, an on-policy self-distillation framework that learns from student-generated experience using privileged supervision from the WAM itself. At each student-visited state, the same model acts as a teacher conditioned additionally on future video from a reference demonstration, providing a conditional action distribution as the training target. The student learns from this guidance using only deployment-time inputs, obtaining dense supervision on the states it actually encounters without environmental rewards. To transfer this supervision to a flow-matching action expert, TOPS-WAM distills the teacher into the student with an <b>energy score</b>, a distribution-level objective that matches the teacher's action distribution from the student's own samples rather than regressing its velocity field. We update only the action expert while keeping the world-modeling backbone frozen.</p>
+</section>
+
+<section id="method" class="wrap">
+  <h2>Method</h2>
+  <p class="lead narrow">The teacher and the student are the <em>same network</em>. The teacher additionally reads <b>hindsight</b>: the future video of the demonstration being imitated. The student sees only deployment-time inputs and is trained on the states its own sampler visits.</p>
+
+  <figure>
+    <img src="media/fig/overview.png" alt="Overview of TOPS-WAM: Stage 0 SFT, Stage A hindsight teacher, Stage B on-policy self-distillation" loading="lazy">
+    <figcaption><b>Overview.</b> Stage 0 fine-tunes the action expert with flow matching. Stage A trains a hindsight encoder and gated cross-attention adapters on the frozen SFT model, giving the teacher. Stage B integrates the student's own ODE without gradients and matches its implied actions to a teacher sample with the energy score, plus a behavior-cloning anchor. Only the student is deployed.</figcaption>
+  </figure>
+
+  <div class="cards">
+    <article>
+      <span class="tag">Stage 0</span>
+      <h3>SFT initialization</h3>
+      <p>Fine-tune the action expert of Fast-WAM on demonstrations with flow matching. The video expert stays frozen in every stage.</p>
+    </article>
+    <article>
+      <span class="tag">Stage A</span>
+      <h3>Hindsight teacher</h3>
+      <p>With the SFT model frozen, a lightweight encoder pools the demonstration's <em>future</em> latent frames into hindsight tokens that the action expert reads through zero-initialized, gated cross-attention adapters (~13M params).</p>
+    </article>
+    <article>
+      <span class="tag">Stage B</span>
+      <h3>On-policy self-distillation</h3>
+      <p>The student rolls out its own ODE, so supervision lands on states it really visits. No simulator and no reward are needed, and nothing is back-propagated through the rollout.</p>
+    </article>
+  </div>
+
+  <div class="narrow">
+    <h3>Why the energy score?</h3>
+    <p>The student cannot see the future, so from its point of view the teacher's behavior is multi-modal. Regressing the teacher's velocity drives the student toward the teacher's conditional <em>mean</em>, which can be correct under none of the modes. Instead we match distributions with a strictly proper scoring rule that needs only one teacher sample and no action likelihood:</p>
+    <div class="eq">
+      $$\mathcal{L}_{\mathrm{ES}}=\sum_{k=1}^{K}\bar w_k\Big[\tfrac{1}{M}\sum_{m}\|\hat{\mathbf a}_{m,k}-\mathbf a_T\|_2-\tfrac{1}{2M^2}\sum_{m,m'}\|\hat{\mathbf a}_{m,k}-\hat{\mathbf a}_{m',k}\|_2\Big]$$
+    </div>
+    <p>The first term pulls the student's samples toward the teacher's sample; the second pushes them apart and prevents collapse. Here $\hat{\mathbf a}=\mathbf a_\sigma-\sigma\,v_\theta(\mathbf a_\sigma,\sigma,o)$ is the one-pass <em>implied action</em>. The full objective adds a behavior-cloning anchor: $\mathcal{L}_B=\lambda_{\mathrm{dist}}\mathcal{L}_{\mathrm{dist}}+\lambda_{\mathrm{BC}}\mathcal{L}_{\mathrm{BC}}$.</p>
+  </div>
+</section>
+
+<section id="results" class="wrap">
+  <h2>Results</h2>
+
+  <h3>Post-training on LIBERO-90 and RoboTwin 2.0</h3>
+  <p class="narrow">Success rates (%). All baselines share the starting checkpoint, data, optimizer and budget unless noted. Fast-WAM is the released checkpoint without post-training.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th rowspan="2">Method</th><th rowspan="2">LIBERO-90</th><th colspan="2">RoboTwin 2.0</th></tr>
+    <tr><th>Clean</th><th>Random.</th></tr></thead>
+    <tbody>
+      <tr><td>Fast-WAM</td><td>15.56</td><td>86.48</td><td>83.44</td></tr>
+      <tr><td>SFT</td><td>78.89</td><td>&ndash;</td><td>&ndash;</td></tr>
+      <tr><td>Full SFT</td><td>81.24</td><td>84.12</td><td>83.24</td></tr>
+      <tr><td>BC control</td><td>71.56</td><td>85.36</td><td>82.08</td></tr>
+      <tr><td>Self-imitation</td><td>79.62</td><td>&ndash;</td><td>&ndash;</td></tr>
+      <tr><td>Shuffled hindsight</td><td>80.28</td><td>&ndash;</td><td>&ndash;</td></tr>
+      <tr class="ours"><td>TOPS-WAM (Ours)</td><td>85.18</td><td>87.04</td><td>83.68</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul class="narrow bullets">
+    <li><b>Not just more training:</b> continuing SFT with the same steps but no teacher drops to 71.56%.</li>
+    <li><b>Not just on-policy data:</b> self-imitation adds only 0.73 points; TOPS-WAM beats it by 5.56.</li>
+    <li><b>The gain is the privileged information:</b> a teacher that reads another episode's future reaches only 80.28%.</li>
+    <li><b>Beats full SFT</b> by 3.94 points while training only the action expert.</li>
+  </ul>
+
+  <h3>Continual learning: less forgetting</h3>
+  <p class="narrow">After post-training on LIBERO-90, we evaluate on the four original LIBERO suites that the released checkpoint was trained on.</p>
+  <div class="tablewrap">
+  <table class="small">
+    <thead><tr><th rowspan="2">Method</th><th>New</th><th colspan="5">Original suites</th></tr>
+    <tr><th>LIBERO-90</th><th>Spatial</th><th>Object</th><th>Goal</th><th>Long</th><th>Avg</th></tr></thead>
+    <tbody>
+      <tr><td>Fast-WAM</td><td>15.56</td><td>96.8</td><td>99.6</td><td>95.8</td><td>94.0</td><td>96.55</td></tr>
+      <tr class="sec"><td colspan="7">Without replay</td></tr>
+      <tr><td>SFT</td><td>78.89</td><td>58.6</td><td>33.2</td><td>53.4</td><td>4.6</td><td>37.45</td></tr>
+      <tr><td>Full SFT</td><td>81.24</td><td>54.4</td><td>30.2</td><td>44.6</td><td>2.2</td><td>32.85</td></tr>
+      <tr class="ours"><td>TOPS-WAM</td><td>85.18</td><td>70.8</td><td>38.4</td><td>58.8</td><td>8.2</td><td>44.05</td></tr>
+      <tr class="sec"><td colspan="7">With replay</td></tr>
+      <tr><td>SFT</td><td>76.71</td><td>97.2</td><td>95.8</td><td>92.0</td><td>81.2</td><td>91.55</td></tr>
+      <tr><td>Full SFT</td><td>77.64</td><td>97.8</td><td>96.0</td><td>94.4</td><td>83.4</td><td>92.90</td></tr>
+      <tr class="ours"><td>TOPS-WAM</td><td>81.56</td><td>98.4</td><td>96.0</td><td>95.8</td><td>90.2</td><td>95.10</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="narrow">Because the student is distilled on its own sampling trajectories, its updates stay closer to its current behavior. With replay, TOPS-WAM comes within 1.5 points of the released checkpoint on the original suites, with the largest gain on the long-horizon suite.</p>
+
+  <h3>Ablations and cost</h3>
+  <div class="figgrid">
+    <figure>
+      <img src="media/fig/ablation.png" alt="Ablation: velocity matching vs energy score" loading="lazy">
+      <figcaption><b>Distillation objective.</b> Velocity matching gains nothing over SFT (79.02%); the energy score reaches 85.18%.</figcaption>
+    </figure>
+    <figure>
+      <img src="media/fig/anchor_ablation.png" alt="Effect of the BC anchor" loading="lazy">
+      <figcaption><b>BC anchor.</b> Distillation alone (&minus;4.5) and BC alone (&minus;7.3) both hurt; together they add +6.3.</figcaption>
+    </figure>
+    <figure>
+      <img src="media/fig/num_samples.png" alt="Effect of number of student samples" loading="lazy">
+      <figcaption><b>Student samples $M$.</b> Success improves monotonically to 85.2% at $M=4$ as the repulsion term preserves diversity.</figcaption>
+    </figure>
+    <figure>
+      <img src="media/fig/compute_vs_success.png" alt="Success versus training time" loading="lazy">
+      <figcaption><b>Training time.</b> 1.28&times; SFT and 0.56&times; full SFT, with higher success. The deployed policy is the unmodified Fast-WAM.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="videos" class="wrap">
+  <h2>Rollout Videos</h2>
+  <p class="narrow">LIBERO-90 rollouts of SFT and TOPS-WAM from the <b>same initial state</b>. Each card shows the rollout video above five keyframes (SFT top row, TOPS-WAM bottom row).</p>
+
+  <div class="vgroup">
+    <h3><span class="dot win"></span>Where TOPS-WAM succeeds</h3>
+    <div class="vgrid">
+      <article class="vcard">
+        <h4>Put the moka pot on the stove</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task19_trial0_strip.png"><source src="media/video/win_task19_trial0.mp4" type="video/mp4"></video>
+        <img src="media/fig/win_task19_trial0_strip.png" alt="Keyframes, moka pot task" loading="lazy">
+        <p>SFT lifts the pot but carries it away from the stove and disturbs the frying pan. TOPS-WAM grasps the handle and places it on the stove.</p>
+      </article>
+      <article class="vcard">
+        <h4>Pick and place with a plate</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_strip.png"><source src="media/video/win_task43_trial0.mp4" type="video/mp4"></video>
+        <img src="media/fig/win_task43_trial0_strip.png" alt="Keyframes, plate task" loading="lazy">
+        <p>SFT picks up the plate but drifts toward the stove and stalls. TOPS-WAM lifts it and transports it toward the cabinet.</p>
+      </article>
+      <article class="vcard">
+        <h4>LIBERO-90 &middot; Task 3</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task3_trial0_strip.png"><source src="media/video/win_task3_trial0.mp4" type="video/mp4"></video>
+        <img src="media/fig/win_task3_trial0_strip.png" alt="Keyframes, task 3" loading="lazy">
+        <p>SFT drifts toward the bowl without completing the task, while TOPS-WAM places the item in the drawer from the same initial state.</p>
+      </article>
+      <article class="vcard">
+        <h4>LIBERO-90 &middot; Task 81</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_strip.png"><source src="media/video/win_task81_trial0.mp4" type="video/mp4"></video>
+        <img src="media/fig/win_task81_trial0_strip.png" alt="Keyframes, task 81" loading="lazy">
+        <p>TOPS-WAM succeeds where SFT fails.</p>
+      </article>
+    </div>
+  </div>
+
+  <div class="vgroup">
+    <h3><span class="dot fail"></span>Failure case</h3>
+    <div class="vgrid one">
+      <article class="vcard">
+        <h4>LIBERO-90 &middot; Task 74 (trial 2)</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/fail_task74_trial2_strip.png"><source src="media/video/fail_task74_trial2.mp4" type="video/mp4"></video>
+        <img src="media/fig/fail_task74_trial2_strip.png" alt="Keyframes, failure case" loading="lazy">
+        <p>Here SFT succeeds and TOPS-WAM does not. We include it for transparency: distillation does not fix every failure.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="bibtex" class="wrap narrow">
+  <h2>BibTeX</h2>
+  <!-- TODO: update author list / venue / identifiers -->
+  <pre><code>@inproceedings{topswam2027,
+  title     = {TOPS-WAM: Trajectory-level On-Policy Self-distillation for World Action Models},
+  author    = {First Author and Second Author and Third Author},
+  booktitle = {Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year      = {2027}
+}</code></pre>
+</section>
+</main>
+
+<footer>
+  <p>This page follows the layout of the <a href="https://world-action-verifier.github.io/">World Action Verifier</a> project page, itself built on the Nerfies template.</p>
+</footer>
+
+<script>
+  // Play videos only while visible
+  const vids = document.querySelectorAll('video.autoplay');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      const v = e.target;
+      if (e.isIntersecting) { if (v.preload === 'none') v.preload = 'auto'; v.play().catch(() => {}); }
+      else v.pause();
+    }), { threshold: 0.4 });
+    vids.forEach(v => io.observe(v));
+  }
+  // Highlight current section in nav
+  const links = [...document.querySelectorAll('.topnav a')];
+  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+  const so = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-40% 0px -55% 0px' });
+  secs.forEach(s => s && so.observe(s));
+</script>
+</body>
+</html>
