@@ -20,7 +20,7 @@ p{margin:0 0 14px}
 .topnav a:hover,.topnav a.on{color:var(--accent);background:#eef3ff}
 
 .hero{text-align:center;padding:48px 0 12px;background:linear-gradient(#f4f7ff,#fff)}
-.title{font-size:3.2rem;font-weight:700;margin:0;letter-spacing:-.5px}
+.title{color:#76b900;font-size:3.2rem;font-weight:700;margin:0;letter-spacing:-.5px}
 .subtitle{font-family:"Google Sans",sans-serif;font-size:1.45rem;color:#444;margin:6px auto 22px;max-width:760px}
 .authors{font-size:1.15rem;margin:0 0 4px}
 .authors span{display:inline-block;margin:0 12px}
@@ -90,4 +90,5 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:30px 16px 4
   .subtitle{font-size:1.15rem}
 }
 
-#abstract p{text-align:justify;hyphens:auto}
+main p,figcaption{text-align:justify;hyphens:auto}
+.vcard p,.cards p{text-align:justify}
