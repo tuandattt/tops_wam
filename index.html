@@ -178,10 +178,10 @@
 
 <section id="videos" class="wrap">
   <h2>Qualitative Comparison</h2>
-  <p class="narrow">LIBERO-90 rollouts of SFT and TOPS-WAM from the <b>same initial state</b>. Each card shows the rollout video above five keyframes (SFT top row, TOPS-WAM bottom row).</p>
+  <p class="narrow">LIBERO-90 rollouts of SFT and TOPS-WAM from the <b>same initial state</b>. Each card shows the rollout video above five keyframes.</p>
 
   <div class="vgroup">
-    <h3><span class="dot win"></span>Where TOPS-WAM succeeds</h3>
+    <h3><span class="dot win"></span>Learning new tasks (LIBERO-90): SFT fails, TOPS-WAM succeeds</h3>
     <div class="vgrid">
       <article class="vcard">
         <h4>Put the moka pot on the stove</h4>
@@ -206,6 +206,31 @@
         <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_strip.png"><source src="media/video/win_task81_trial0.mp4" type="video/mp4"></video>
         <img src="media/fig/win_task81_trial0_strip.png" alt="Keyframes, task 81" loading="lazy">
         <p>TOPS-WAM succeeds where SFT fails.</p>
+      </article>
+    </div>
+  </div>
+
+  <div class="vgroup">
+    <h3><span class="dot win"></span>Continual learning: SFT forgets old skills, TOPS-WAM retains them</h3>
+    <p class="narrow">Rollouts on tasks from the original LIBERO suites after post-training on LIBERO-90. Rows show the released Fast-WAM checkpoint (before post-training), SFT and TOPS-WAM from the same initial state.</p>
+    <div class="vgrid">
+      <article class="vcard">
+        <h4>LIBERO-10 (Long) &middot; Task 5</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_10_task5_trial3_strip.png"><source src="media/video/libero_10_task5_trial3.mp4" type="video/mp4"></video>
+        <img src="media/fig/libero_10_task5_trial3_strip.png" alt="Keyframes: LIBERO-10 (Long) &middot; Task 5" loading="lazy">
+        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
+      </article>
+      <article class="vcard">
+        <h4>LIBERO-Goal &middot; Task 1</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task1_trial0_strip.png"><source src="media/video/libero_goal_task1_trial0.mp4" type="video/mp4"></video>
+        <img src="media/fig/libero_goal_task1_trial0_strip.png" alt="Keyframes: LIBERO-Goal &middot; Task 1" loading="lazy">
+        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
+      </article>
+      <article class="vcard">
+        <h4>LIBERO-Goal &middot; Task 5</h4>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task5_trial0_strip.png"><source src="media/video/libero_goal_task5_trial0.mp4" type="video/mp4"></video>
+        <img src="media/fig/libero_goal_task5_trial0_strip.png" alt="Keyframes: LIBERO-Goal &middot; Task 5" loading="lazy">
+        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
     </div>
   </div>
