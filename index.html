@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&family=Castoro&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/index.css">
+<link rel="stylesheet" href="static/css/index.css?v=3">
 <script>
   window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
 </script>
@@ -115,7 +115,7 @@
   <div class="tablewrap">
   <table>
     <thead><tr><th rowspan="2">Method</th><th rowspan="2">LIBERO-90</th><th colspan="2">RoboTwin 2.0</th></tr>
-    <tr><th>Clean</th><th>Random.</th></tr></thead>
+    <tr><th class="c">Clean</th><th>Random.</th></tr></thead>
     <tbody>
       <tr><td>Fast-WAM</td><td>15.56</td><td>86.48</td><td>83.44</td></tr>
       <tr><td>SFT</td><td>78.89</td><td>&ndash;</td><td>&ndash;</td></tr>
@@ -139,7 +139,7 @@
   <div class="tablewrap">
   <table class="small">
     <thead><tr><th rowspan="2">Method</th><th>New</th><th colspan="5">Original suites</th></tr>
-    <tr><th>LIBERO-90</th><th>Spatial</th><th>Object</th><th>Goal</th><th>Long</th><th>Avg</th></tr></thead>
+    <tr><th class="c">LIBERO-90</th><th>Spatial</th><th>Object</th><th>Goal</th><th>Long</th><th>Avg</th></tr></thead>
     <tbody>
       <tr><td>Fast-WAM</td><td>15.56</td><td>96.8</td><td>99.6</td><td>95.8</td><td>94.0</td><td>96.55</td></tr>
       <tr class="sec"><td colspan="7">Without replay</td></tr>
@@ -212,26 +212,31 @@
 
   <div class="vgroup">
     <h3><span class="dot win"></span>Continual learning: SFT forgets old skills, TOPS-WAM retains them</h3>
-    <p class="narrow">Rollouts on tasks from the original LIBERO suites after post-training on LIBERO-90. Rows show the released Fast-WAM checkpoint (before post-training), SFT and TOPS-WAM from the same initial state.</p>
-    <div class="vgrid">
-      <article class="vcard">
+    <p class="narrow">Rollouts on tasks from the original LIBERO suites after post-training on LIBERO-90. Rows show the released Fast-WAM checkpoint (before post-training), SFT and TOPS-WAM from the same initial state. Use the arrows to browse.</p>
+    <div class="carousel">
+      <button class="nav prev" aria-label="Previous video">&#10094;</button>
+      <div class="slides">
+      <article class="vcard slide active">
         <h4>&ldquo;pick up the book and place it in the back compartment of the caddy&rdquo;</h4>
         <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_10_task5_trial3_strip.png"><source src="media/video/libero_10_task5_trial3.mp4" type="video/mp4"></video>
         <img src="media/fig/libero_10_task5_trial3_strip.png" alt="Keyframes: LIBERO-10 (Long) &middot; Task 5" loading="lazy">
         <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
-      <article class="vcard">
+      <article class="vcard slide">
         <h4>&ldquo;put the bowl on the stove&rdquo;</h4>
         <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task1_trial0_strip.png"><source src="media/video/libero_goal_task1_trial0.mp4" type="video/mp4"></video>
         <img src="media/fig/libero_goal_task1_trial0_strip.png" alt="Keyframes: LIBERO-Goal &middot; Task 1" loading="lazy">
         <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
-      <article class="vcard">
+      <article class="vcard slide">
         <h4>&ldquo;push the plate to the front of the stove&rdquo;</h4>
         <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task5_trial0_strip.png"><source src="media/video/libero_goal_task5_trial0.mp4" type="video/mp4"></video>
         <img src="media/fig/libero_goal_task5_trial0_strip.png" alt="Keyframes: LIBERO-Goal &middot; Task 5" loading="lazy">
         <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
+      </div>
+      <button class="nav next" aria-label="Next video">&#10095;</button>
+      <div class="dots"><button class="dotbtn on" aria-label="Go to video 1"></button><button class="dotbtn" aria-label="Go to video 2"></button><button class="dotbtn" aria-label="Go to video 3"></button></div>
     </div>
   </div>
 </section>
@@ -267,6 +272,25 @@
   }), { rootMargin: '-40% 0px -55% 0px' });
   secs.forEach(s => s && so.observe(s));
 
+
+  // Carousel (fixed card size, no scaling)
+  document.querySelectorAll('.carousel').forEach(car => {
+    const slides = [...car.querySelectorAll('.slide')], dots = [...car.querySelectorAll('.dotbtn')];
+    let cur = 0;
+    const show = i => {
+      cur = (i + slides.length) % slides.length;
+      slides.forEach((sl, k) => {
+        const on = k === cur; sl.classList.toggle('active', on);
+        const v = sl.querySelector('video'); if (!on && v) { v.pause(); v.currentTime = 0; }
+      });
+      dots.forEach((d, k) => d.classList.toggle('on', k === cur));
+    };
+    car.querySelector('.prev').onclick = () => show(cur - 1);
+    car.querySelector('.next').onclick = () => show(cur + 1);
+    dots.forEach((d, k) => d.onclick = () => show(k));
+    car.tabIndex = 0;
+    car.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') show(cur - 1); if (e.key === 'ArrowRight') show(cur + 1); });
+  });
 </script>
 </body>
 </html>
