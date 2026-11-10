@@ -92,3 +92,15 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:30px 16px 4
 
 main p,figcaption{text-align:justify;hyphens:auto}
 .vcard p,.cards p{text-align:justify}
+
+.carousel{position:relative;max-width:980px;margin:16px auto 0;padding:0 56px}
+.carousel .slide{display:none}
+.carousel .slide.active{display:block}
+.carousel .nav{position:absolute;top:38%;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#222;font-size:1.1rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12);transition:background .15s,color .15s}
+.carousel .nav:hover{background:#76b900;color:#fff;border-color:#76b900}
+.carousel .prev{left:0}.carousel .next{right:0}
+.carousel .dots{display:flex;justify-content:center;gap:10px;margin-top:14px}
+.dotbtn{width:11px;height:11px;border-radius:50%;border:0;background:#cbd5e1;cursor:pointer;padding:0}
+.dotbtn.on{background:#76b900}
+.carousel:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+@media(max-width:860px){.carousel{padding:0 8px}.carousel .nav{top:auto;bottom:-6px;position:static;display:inline-block;margin:10px 6px 0}.carousel .dots{display:none}.carousel{text-align:center}.carousel .slides{text-align:left}}
