@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&family=Castoro&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/index.css?v=3">
+<link rel="stylesheet" href="static/css/index.css?v=4">
 <script>
   window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
 </script>
@@ -170,10 +170,17 @@
       <figcaption><b>Student samples $M$.</b> Success improves monotonically to 85.2% at $M=4$ as the repulsion term preserves diversity.</figcaption>
     </figure>
     <figure>
-      <img src="media/fig/compute_vs_success.png" alt="Success versus training time" loading="lazy">
-      <figcaption><b>Training time.</b> 1.28&times; SFT and 0.56&times; full SFT, with higher success. The deployed policy is the unmodified Fast-WAM.</figcaption>
+      <img src="media/fig/onpolicy_ablation.png" alt="Effect of on-policy states: SFT, off-policy distillation, on-policy TOPS-WAM" loading="lazy">
+      <figcaption><b>On-policy states.</b> Distilling on demonstration states (off-policy) lifts SFT only from 78.9% to 80.7%; distilling on the student&rsquo;s own sampling trajectories reaches 85.2%.</figcaption>
     </figure>
   </div>
+  <p class="narrow">The off-policy variant replaces the student&rsquo;s sampler states with the demonstrated action noised to the same points, i.e. the states SFT sees, keeping everything else unchanged. The hindsight teacher helps even on demonstration states, but most of the gain requires supervising the student on the states it reaches at inference.</p>
+
+  <h3>Computational cost</h3>
+  <figure class="costfig">
+    <img src="media/fig/compute_vs_success.png" alt="Success versus training time" loading="lazy">
+    <figcaption><b>Training time.</b> 1.28&times; SFT and 0.56&times; full SFT, with higher success. The deployed policy is the unmodified Fast-WAM.</figcaption>
+  </figure>
 </section>
 
 <section id="videos" class="wrap">
@@ -192,8 +199,8 @@
       <article class="vcard">
         <h4>&ldquo;put the white bowl on top of the cabinet&rdquo;</h4>
         <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_strip.png"><source src="media/video/win_task43_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/win_task43_trial0_strip.png" alt="Keyframes, plate task" loading="lazy">
-        <p>SFT picks up the plate but drifts toward the stove and stalls. TOPS-WAM lifts it and transports it toward the cabinet.</p>
+        <img src="media/fig/win_task43_trial0_strip.png" alt="Keyframes, white bowl task" loading="lazy">
+        <p>SFT picks up the white bowl but drifts toward the stove and stalls. TOPS-WAM lifts the bowl and carries it to the top of the cabinet.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;put the butter at the back in the top drawer of the cabinet and close it&rdquo;</h4>

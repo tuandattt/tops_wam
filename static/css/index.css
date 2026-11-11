@@ -109,3 +109,6 @@ th.c{text-align:center !important}
 .dotbtn.on{background:#76b900}
 .carousel:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 @media(max-width:620px){.carousel{padding:0 40px}.carousel .nav{width:34px;height:34px}}
+
+.costfig img{max-height:300px;width:auto;margin:0 auto;display:block}
+.costfig figcaption{text-align:center}
