@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TOPS-WAM: Trajectory-level On-Policy Self-distillation for World Action Models</title>
-<meta name="description" content="TOPS-WAM post-trains world action models by letting the model teach itself with hindsight: a teacher that reads the demonstration's future video supervises the student on its own sampled trajectories, via the energy score.">
+<title>HINT-WAM: Hindsight-Informed Training for World Action Models</title>
+<meta name="description" content="HINT-WAM post-trains world action models by letting the model teach itself with hindsight: a teacher that reads the demonstration&#39;s future video supervises the student on its own sampled denoising trajectories, via the energy score.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&family=Castoro&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/index.css?v=4">
+<link rel="stylesheet" href="static/css/index.css?v=5">
 <script>
   window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
 </script>
@@ -26,8 +26,8 @@
 
 <header class="hero">
   <div class="wrap">
-    <h1 class="title">TOPS-WAM</h1>
-    <p class="subtitle">Trajectory-level On-Policy Self-distillation for World Action Models</p>
+    <h1 class="title">HINT-WAM</h1>
+    <p class="subtitle">Hindsight-Informed Training for World Action Models</p>
 
     <p class="authors">
       <span><a href="https://tuandattt.github.io/">Phuong Tuan Dat</a><sup>1</sup></span>
@@ -46,10 +46,10 @@
     </div>
 
     <figure class="teaser">
-      <video class="autoplay" muted loop playsinline preload="metadata" poster="media/fig/win_task19_trial0_strip.png">
-        <source src="media/video/win_task19_trial0.mp4?v=2" type="video/mp4">
+      <video class="autoplay" muted loop playsinline preload="metadata" poster="media/fig/win_task19_trial0_strip.png?v=3">
+        <source src="media/video/win_task19_trial0.mp4?v=3" type="video/mp4">
       </video>
-      <figcaption><b>Same initial state, different outcome.</b> Rollouts on LIBERO-90 from the SFT policy and from TOPS-WAM.</figcaption>
+      <figcaption><b>Same initial state, different outcome.</b> Rollouts on LIBERO-90 from the SFT policy and from HINT-WAM.</figcaption>
     </figure>
   </div>
 </header>
@@ -66,8 +66,8 @@
 
 <section id="abstract" class="wrap narrow">
   <h2>Abstract</h2>
-  <p>World action models (WAMs) have shown promising generalization and data efficiency in robot manipulation by coupling action generation with predictions of future visual dynamics. Translating these capabilities into reliable task execution, however, remains a challenge for existing post-training methods. Offline supervised fine-tuning provides dense supervision on expert trajectories but offers limited coverage of states arising from the policy's own mistakes, and task-specific adaptation can compromise pretrained capabilities. On-policy reinforcement learning addresses this coverage gap, yet sparse task rewards make exploration and credit assignment difficult, while dense reward shaping still provides scalar evaluations rather than direct action targets.</p>
-  <p>We introduce <b>TOPS-WAM</b>, an on-policy self-distillation framework that learns from student-generated experience using privileged supervision from the WAM itself. At each student-visited state, the same model acts as a teacher conditioned additionally on future video from a reference demonstration, providing a conditional action distribution as the training target. The student learns from this guidance using only deployment-time inputs, obtaining dense supervision on the states it actually encounters without environmental rewards. To transfer this supervision to a flow-matching action expert, TOPS-WAM distills the teacher into the student with an <b>energy score</b>, a distribution-level objective that matches the teacher's action distribution from the student's own samples rather than regressing its velocity field. We update only the action expert while keeping the world-modeling backbone frozen.</p>
+  <p>World action models (WAMs) have shown promising generalization and data efficiency in robot manipulation by coupling action generation with predictions of future visual dynamics. Translating these capabilities into reliable task execution, however, remains a challenge for existing post-training methods. Offline supervised fine-tuning provides dense supervision on expert trajectories, but its flow-matching action expert is trained only on noised demonstration actions and never on the intermediate states produced by its own sampler; task-specific adaptation can also compromise pretrained capabilities. On-policy reinforcement learning trains on the policy&rsquo;s own behavior, yet sparse task rewards make exploration and credit assignment difficult, while dense reward shaping still provides scalar evaluations rather than direct action targets.</p>
+  <p>We introduce <b>HINT-WAM</b>, the first on-policy self-distillation framework that supervises the action expert on its own sampling trajectories using hindsight, the future video of the demonstration, as privileged information available to the WAM itself. For each demonstration observation, the student generates its action through its own denoising trajectory, and at the states along this trajectory the same model acts as a teacher conditioned additionally on this hindsight, providing a conditional action distribution as a dense training target, while the student sees only deployment-time inputs and needs no environmental rewards or simulator interaction. To transfer this supervision to a flow-matching action expert, HINT-WAM distills the teacher into the student with an <b>energy score</b>, a distribution-level objective that matches the teacher&rsquo;s action distribution from the student&rsquo;s own samples rather than regressing its velocity field.</p>
 </section>
 
 <section id="method" class="wrap">
@@ -75,7 +75,7 @@
   <p class="lead narrow">The teacher and the student are the <em>same network</em>. The teacher additionally reads <b>hindsight</b>: the future video of the demonstration being imitated. The student sees only deployment-time inputs and is trained on the states its own sampler visits.</p>
 
   <figure>
-    <img src="media/fig/overview.png" alt="Overview of TOPS-WAM: Stage 0 SFT, Stage A hindsight teacher, Stage B on-policy self-distillation" loading="lazy">
+    <img src="media/fig/overview.png?v=3" alt="Overview of HINT-WAM: Stage 0 SFT, Stage A hindsight teacher, Stage B on-policy self-distillation" loading="lazy">
     <figcaption><b>Overview.</b> Stage 0 fine-tunes the action expert with flow matching. Stage A trains a hindsight encoder and gated cross-attention adapters on the frozen SFT model, giving the teacher. Stage B integrates the student's own ODE without gradients and matches its implied actions to a teacher sample with the energy score, plus a behavior-cloning anchor. Only the student is deployed.</figcaption>
   </figure>
 
@@ -93,7 +93,7 @@
     <article>
       <span class="tag">Stage B</span>
       <h3>On-policy self-distillation</h3>
-      <p>The student rolls out its own ODE, so supervision lands on states it really visits. No simulator and no reward are needed, and nothing is back-propagated through the rollout.</p>
+      <p>The student rolls out its own ODE, so supervision lands on states it really visits. No simulator and no reward are needed, and nothing is back-propagated through the rollout. &ldquo;On-policy&rdquo; refers to the generation of actions: observations come from demonstrations, and the student generates the denoising trajectory of its own action chunk.</p>
     </article>
   </div>
 
@@ -123,13 +123,13 @@
       <tr><td>BC control</td><td>71.56</td><td>85.36</td><td>82.08</td></tr>
       <tr><td>Self-imitation</td><td>79.62</td><td>&ndash;</td><td>&ndash;</td></tr>
       <tr><td>Shuffled hindsight</td><td>80.28</td><td>&ndash;</td><td>&ndash;</td></tr>
-      <tr class="ours"><td>TOPS-WAM (Ours)</td><td>85.18</td><td>87.04</td><td>83.68</td></tr>
+      <tr class="ours"><td>HINT-WAM (Ours)</td><td>85.18</td><td>87.04</td><td>83.68</td></tr>
     </tbody>
   </table>
   </div>
   <ul class="narrow bullets">
     <li><b>Not just more training:</b> continuing SFT with the same steps but no teacher drops to 71.56%.</li>
-    <li><b>Not just on-policy data:</b> self-imitation adds only 0.73 points; TOPS-WAM beats it by 5.56.</li>
+    <li><b>Not just on-policy data:</b> self-imitation adds only 0.73 points; HINT-WAM beats it by 5.56.</li>
     <li><b>The gain is the privileged information:</b> a teacher that reads another episode's future reaches only 80.28%.</li>
     <li><b>Beats full SFT</b> by 3.94 points while training only the action expert.</li>
   </ul>
@@ -145,32 +145,32 @@
       <tr class="sec"><td colspan="7">Without replay</td></tr>
       <tr><td>SFT</td><td>78.89</td><td>58.6</td><td>33.2</td><td>53.4</td><td>4.6</td><td>37.45</td></tr>
       <tr><td>Full SFT</td><td>81.24</td><td>54.4</td><td>30.2</td><td>44.6</td><td>2.2</td><td>32.85</td></tr>
-      <tr class="ours"><td>TOPS-WAM</td><td>85.18</td><td>70.8</td><td>38.4</td><td>58.8</td><td>8.2</td><td>44.05</td></tr>
+      <tr class="ours"><td>HINT-WAM</td><td>85.18</td><td>70.8</td><td>38.4</td><td>58.8</td><td>8.2</td><td>44.05</td></tr>
       <tr class="sec"><td colspan="7">With replay</td></tr>
       <tr><td>SFT</td><td>76.71</td><td>97.2</td><td>95.8</td><td>92.0</td><td>81.2</td><td>91.55</td></tr>
       <tr><td>Full SFT</td><td>77.64</td><td>97.8</td><td>96.0</td><td>94.4</td><td>83.4</td><td>92.90</td></tr>
-      <tr class="ours"><td>TOPS-WAM</td><td>81.56</td><td>98.4</td><td>96.0</td><td>95.8</td><td>90.2</td><td>95.10</td></tr>
+      <tr class="ours"><td>HINT-WAM</td><td>81.56</td><td>98.4</td><td>96.0</td><td>95.8</td><td>90.2</td><td>95.10</td></tr>
     </tbody>
   </table>
   </div>
-  <p class="narrow">Because the student is distilled on its own sampling trajectories, its updates stay closer to its current behavior. With replay, TOPS-WAM comes within 1.5 points of the released checkpoint on the original suites, with the largest gain on the long-horizon suite.</p>
+  <p class="narrow">Because the student is distilled on its own sampling trajectories, its updates stay closer to its current behavior. With replay, HINT-WAM comes within 1.5 points of the released checkpoint on the original suites, with the largest gain on the long-horizon suite.</p>
 
   <h3>Ablations and cost</h3>
   <div class="figgrid">
     <figure>
-      <img src="media/fig/ablation.png" alt="Ablation: velocity matching vs energy score" loading="lazy">
+      <img src="media/fig/ablation.png?v=3" alt="Ablation: velocity matching vs energy score" loading="lazy">
       <figcaption><b>Distillation objective.</b> Velocity matching gains nothing over SFT (79.02%); the energy score reaches 85.18%.</figcaption>
     </figure>
     <figure>
-      <img src="media/fig/anchor_ablation.png" alt="Effect of the BC anchor" loading="lazy">
+      <img src="media/fig/anchor_ablation.png?v=3" alt="Effect of the BC anchor" loading="lazy">
       <figcaption><b>BC anchor.</b> Distillation alone (&minus;4.5) and BC alone (&minus;7.3) both hurt; together they add +6.3.</figcaption>
     </figure>
     <figure>
-      <img src="media/fig/num_samples.png" alt="Effect of number of student samples" loading="lazy">
+      <img src="media/fig/num_samples.png?v=3" alt="Effect of number of student samples" loading="lazy">
       <figcaption><b>Student samples $M$.</b> Success improves monotonically to 85.2% at $M=4$ as the repulsion term preserves diversity.</figcaption>
     </figure>
     <figure>
-      <img src="media/fig/onpolicy_ablation.png" alt="Effect of on-policy states: SFT, off-policy distillation, on-policy TOPS-WAM" loading="lazy">
+      <img src="media/fig/onpolicy_ablation.png?v=3" alt="Effect of on-policy states: SFT, off-policy distillation, on-policy HINT-WAM" loading="lazy">
       <figcaption><b>On-policy states.</b> Distilling on demonstration states (off-policy) lifts SFT only from 78.9% to 80.7%; distilling on the student&rsquo;s own sampling trajectories reaches 85.2%.</figcaption>
     </figure>
   </div>
@@ -178,68 +178,68 @@
 
   <h3>Computational cost</h3>
   <figure class="costfig">
-    <img src="media/fig/compute_vs_success.png" alt="Success versus training time" loading="lazy">
+    <img src="media/fig/compute_vs_success.png?v=3" alt="Success versus training time" loading="lazy">
     <figcaption><b>Training time.</b> 1.28&times; SFT and 0.56&times; full SFT, with higher success. The deployed policy is the unmodified Fast-WAM.</figcaption>
   </figure>
 </section>
 
 <section id="videos" class="wrap">
   <h2>Qualitative Comparison</h2>
-  <p class="narrow">LIBERO-90 rollouts of SFT and TOPS-WAM from the <b>same initial state</b>. Each card shows the rollout video above five keyframes.</p>
+  <p class="narrow">LIBERO-90 rollouts of SFT and HINT-WAM from the <b>same initial state</b>. Each card shows the rollout video above five keyframes.</p>
 
   <div class="vgroup">
-    <h3><span class="dot win"></span>Learning new tasks (LIBERO-90): SFT fails, TOPS-WAM succeeds</h3>
+    <h3><span class="dot win"></span>Learning new tasks (LIBERO-90): SFT fails, HINT-WAM succeeds</h3>
     <div class="vgrid">
       <article class="vcard">
         <h4>&ldquo;put the moka pot on the stove&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task19_trial0_strip.png"><source src="media/video/win_task19_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/win_task19_trial0_strip.png" alt="Keyframes, moka pot task" loading="lazy">
-        <p>SFT lifts the pot but carries it away from the stove and disturbs the frying pan. TOPS-WAM grasps the handle and places it on the stove.</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task19_trial0_strip.png?v=3"><source src="media/video/win_task19_trial0.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/win_task19_trial0_strip.png?v=3" alt="Keyframes, moka pot task" loading="lazy">
+        <p>SFT lifts the pot but carries it away from the stove and disturbs the frying pan. HINT-WAM grasps the handle and places it on the stove.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;put the white bowl on top of the cabinet&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_strip.png"><source src="media/video/win_task43_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/win_task43_trial0_strip.png" alt="Keyframes, white bowl task" loading="lazy">
-        <p>SFT picks up the white bowl but drifts toward the stove and stalls. TOPS-WAM lifts the bowl and carries it to the top of the cabinet.</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_strip.png?v=3"><source src="media/video/win_task43_trial0.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/win_task43_trial0_strip.png?v=3" alt="Keyframes, white bowl task" loading="lazy">
+        <p>SFT picks up the white bowl but drifts toward the stove and stalls. HINT-WAM lifts the bowl and carries it to the top of the cabinet.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;put the butter at the back in the top drawer of the cabinet and close it&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task3_trial0_strip.png"><source src="media/video/win_task3_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/win_task3_trial0_strip.png" alt="Keyframes, task 3" loading="lazy">
-        <p>SFT drifts toward the bowl without completing the task, while TOPS-WAM places the item in the drawer from the same initial state.</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task3_trial0_strip.png?v=3"><source src="media/video/win_task3_trial0.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/win_task3_trial0_strip.png?v=3" alt="Keyframes, task 3" loading="lazy">
+        <p>SFT drifts toward the bowl without completing the task, while HINT-WAM places the item in the drawer from the same initial state.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;pick up the book and place it in the front compartment of the caddy&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_strip.png"><source src="media/video/win_task81_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/win_task81_trial0_strip.png" alt="Keyframes, task 81" loading="lazy">
-        <p>TOPS-WAM succeeds where SFT fails.</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_strip.png?v=3"><source src="media/video/win_task81_trial0.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/win_task81_trial0_strip.png?v=3" alt="Keyframes, task 81" loading="lazy">
+        <p>HINT-WAM succeeds where SFT fails.</p>
       </article>
     </div>
   </div>
 
   <div class="vgroup">
-    <h3><span class="dot win"></span>Continual learning: SFT forgets old skills, TOPS-WAM retains them</h3>
-    <p class="narrow">Rollouts on tasks from the original LIBERO suites after post-training on LIBERO-90. Rows show the released Fast-WAM checkpoint (before post-training), SFT and TOPS-WAM from the same initial state. Use the arrows to browse.</p>
+    <h3><span class="dot win"></span>Continual learning: SFT forgets old skills, HINT-WAM retains them</h3>
+    <p class="narrow">Rollouts on tasks from the original LIBERO suites after post-training on LIBERO-90. Rows show the released Fast-WAM checkpoint (before post-training), SFT and HINT-WAM from the same initial state. Use the arrows to browse.</p>
     <div class="carousel">
       <button class="nav prev" aria-label="Previous video">&#10094;</button>
       <div class="slides">
       <article class="vcard slide active">
         <h4>&ldquo;pick up the book and place it in the back compartment of the caddy&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_10_task5_trial3_strip.png"><source src="media/video/libero_10_task5_trial3.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/libero_10_task5_trial3_strip.png" alt="Keyframes: LIBERO-10 (Long) &middot; Task 5" loading="lazy">
-        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_10_task5_trial3_strip.png?v=3"><source src="media/video/libero_10_task5_trial3.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/libero_10_task5_trial3_strip.png?v=3" alt="Keyframes: LIBERO-10 (Long) &middot; Task 5" loading="lazy">
+        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. HINT-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
       <article class="vcard slide">
         <h4>&ldquo;put the bowl on the stove&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task1_trial0_strip.png"><source src="media/video/libero_goal_task1_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/libero_goal_task1_trial0_strip.png" alt="Keyframes: LIBERO-Goal &middot; Task 1" loading="lazy">
-        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task1_trial0_strip.png?v=3"><source src="media/video/libero_goal_task1_trial0.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/libero_goal_task1_trial0_strip.png?v=3" alt="Keyframes: LIBERO-Goal &middot; Task 1" loading="lazy">
+        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. HINT-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
       <article class="vcard slide">
         <h4>&ldquo;push the plate to the front of the stove&rdquo;</h4>
-        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task5_trial0_strip.png"><source src="media/video/libero_goal_task5_trial0.mp4?v=2" type="video/mp4"></video>
-        <img src="media/fig/libero_goal_task5_trial0_strip.png" alt="Keyframes: LIBERO-Goal &middot; Task 5" loading="lazy">
-        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. TOPS-WAM keeps the skill and succeeds (bottom row).</p>
+        <video class="autoplay" controls muted loop playsinline preload="none" poster="media/fig/libero_goal_task5_trial0_strip.png?v=3"><source src="media/video/libero_goal_task5_trial0.mp4?v=3" type="video/mp4"></video>
+        <img src="media/fig/libero_goal_task5_trial0_strip.png?v=3" alt="Keyframes: LIBERO-Goal &middot; Task 5" loading="lazy">
+        <p>The released Fast-WAM checkpoint solves this original-suite task (top row). After plain SFT on LIBERO-90 it fails (middle row), a sign of catastrophic forgetting. HINT-WAM keeps the skill and succeeds (bottom row).</p>
       </article>
       </div>
       <button class="nav next" aria-label="Next video">&#10095;</button>
@@ -251,8 +251,8 @@
 <section id="bibtex" class="wrap narrow">
   <h2>BibTeX</h2>
   <!-- TODO: update with venue / identifiers once available -->
-  <pre><code>@misc{topswam,
-  title     = {TOPS-WAM: Trajectory-level On-Policy Self-distillation for World Action Models},
+  <pre><code>@misc{hintwam,
+  title     = {HINT-WAM: Hindsight-Informed Training for World Action Models},
   author    = {Phuong Tuan Dat and Qi Li and Xinchao Wang},
   year      = {2026}
 }</code></pre>
