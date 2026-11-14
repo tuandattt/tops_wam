@@ -112,3 +112,9 @@ th.c{text-align:center !important}
 
 .costfig img{max-height:300px;width:auto;margin:0 auto;display:block}
 .costfig figcaption{text-align:center}
+
+.tag{color:#76b900;background:#f1f8e4}
+.seg{display:inline-flex;gap:0;margin:0 0 10px;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{font-family:"Google Sans",sans-serif;font-size:.82rem;padding:5px 14px;border:0;background:#fff;color:var(--muted);cursor:pointer}
+.seg button.on{background:#76b900;color:#fff}
+.vcard video[hidden],.rawnote[hidden]{display:none}
