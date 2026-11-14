@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&family=Castoro&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="static/css/index.css?v=6">
+<link rel="stylesheet" href="static/css/index.css?v=8">
 <script>
   window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
 </script>
@@ -27,7 +27,7 @@
 <header class="hero">
   <div class="wrap">
     <h1 class="title">HINT-WAM</h1>
-    <p class="subtitle">Hindsight-Informed Training for World Action Models</p>
+    <p class="subtitle"><span class="u">H</span>indsight-<span class="u">In</span>formed <span class="u">T</span>raining for <span class="u">W</span>orld <span class="u">A</span>ction <span class="u">M</span>odels</p>
 
     <p class="authors">
       <span><a href="https://tuandattt.github.io/">Phuong Tuan Dat</a><sup>1</sup></span>
@@ -192,37 +192,41 @@
     <div class="vgrid">
       <article class="vcard">
         <h4>&ldquo;put the moka pot on the stove&rdquo;</h4>
-        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button></div>
+        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button><button data-show="sft">SFT raw</button></div>
         <video class="autoplay cmp" controls muted loop playsinline preload="none" poster="media/fig/win_task19_trial0_strip.png?v=3"><source src="media/video/win_task19_trial0.mp4?v=3" type="video/mp4"></video>
         <video class="autoplay raw" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task19_trial0_hintwam_raw_poster.jpg?v=3"><source src="media/video/win_task19_trial0_hintwam_raw.mp4?v=3" type="video/mp4"></video>
-        <p class="rawnote" hidden>Raw HINT-WAM rollout: third-person view (left) and wrist camera (right), until the task succeeds.</p>
+        <video class="autoplay sft" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task19_trial0_sft_raw_poster.jpg?v=3"><source src="media/video/win_task19_trial0_sft_raw.mp4?v=3" type="video/mp4"></video>
+        <p class="rawnote" hidden></p>
         <img src="media/fig/win_task19_trial0_strip.png?v=3" alt="Keyframes, moka pot task" loading="lazy">
         <p>SFT lifts the pot but carries it away from the stove and disturbs the frying pan. HINT-WAM grasps the handle and places it on the stove.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;put the white bowl on top of the cabinet&rdquo;</h4>
-        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button></div>
+        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button><button data-show="sft">SFT raw</button></div>
         <video class="autoplay cmp" controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_strip.png?v=3"><source src="media/video/win_task43_trial0.mp4?v=3" type="video/mp4"></video>
         <video class="autoplay raw" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_hintwam_raw_poster.jpg?v=3"><source src="media/video/win_task43_trial0_hintwam_raw.mp4?v=3" type="video/mp4"></video>
-        <p class="rawnote" hidden>Raw HINT-WAM rollout: third-person view (left) and wrist camera (right), until the task succeeds.</p>
+        <video class="autoplay sft" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task43_trial0_sft_raw_poster.jpg?v=3"><source src="media/video/win_task43_trial0_sft_raw.mp4?v=3" type="video/mp4"></video>
+        <p class="rawnote" hidden></p>
         <img src="media/fig/win_task43_trial0_strip.png?v=3" alt="Keyframes, white bowl task" loading="lazy">
         <p>SFT picks up the white bowl but drifts toward the stove and stalls. HINT-WAM lifts the bowl and carries it to the top of the cabinet.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;put the butter at the back in the top drawer of the cabinet and close it&rdquo;</h4>
-        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button></div>
+        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button><button data-show="sft">SFT raw</button></div>
         <video class="autoplay cmp" controls muted loop playsinline preload="none" poster="media/fig/win_task3_trial0_strip.png?v=3"><source src="media/video/win_task3_trial0.mp4?v=3" type="video/mp4"></video>
         <video class="autoplay raw" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task3_trial0_hintwam_raw_poster.jpg?v=3"><source src="media/video/win_task3_trial0_hintwam_raw.mp4?v=3" type="video/mp4"></video>
-        <p class="rawnote" hidden>Raw HINT-WAM rollout: third-person view (left) and wrist camera (right), until the task succeeds.</p>
+        <video class="autoplay sft" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task3_trial0_sft_raw_poster.jpg?v=3"><source src="media/video/win_task3_trial0_sft_raw.mp4?v=3" type="video/mp4"></video>
+        <p class="rawnote" hidden></p>
         <img src="media/fig/win_task3_trial0_strip.png?v=3" alt="Keyframes, task 3" loading="lazy">
         <p>SFT drifts toward the bowl without completing the task, while HINT-WAM places the item in the drawer from the same initial state.</p>
       </article>
       <article class="vcard">
         <h4>&ldquo;pick up the book and place it in the front compartment of the caddy&rdquo;</h4>
-        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button></div>
+        <div class="seg" role="tablist"><button class="on" data-show="cmp">Comparison</button><button data-show="raw">HINT-WAM raw</button><button data-show="sft">SFT raw</button></div>
         <video class="autoplay cmp" controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_strip.png?v=3"><source src="media/video/win_task81_trial0.mp4?v=3" type="video/mp4"></video>
         <video class="autoplay raw" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_hintwam_raw_poster.jpg?v=3"><source src="media/video/win_task81_trial0_hintwam_raw.mp4?v=3" type="video/mp4"></video>
-        <p class="rawnote" hidden>Raw HINT-WAM rollout: third-person view (left) and wrist camera (right), until the task succeeds.</p>
+        <video class="autoplay sft" hidden controls muted loop playsinline preload="none" poster="media/fig/win_task81_trial0_sft_raw_poster.jpg?v=3"><source src="media/video/win_task81_trial0_sft_raw.mp4?v=3" type="video/mp4"></video>
+        <p class="rawnote" hidden></p>
         <img src="media/fig/win_task81_trial0_strip.png?v=3" alt="Keyframes, task 81" loading="lazy">
         <p>HINT-WAM succeeds where SFT fails.</p>
       </article>
@@ -312,17 +316,21 @@
   });
 
   // Comparison / raw toggle
+  const NOTES = {
+    raw: 'Raw HINT-WAM rollout: third-person view (left) and wrist camera (right), until the task succeeds.',
+    sft: 'Raw SFT rollout: third-person view (left) and wrist camera (right), full episode.'
+  };
   document.querySelectorAll('.vcard .seg').forEach(seg => {
-    const card = seg.closest('.vcard');
+    const card = seg.closest('.vcard'), note = card.querySelector('.rawnote');
     seg.querySelectorAll('button').forEach(b => b.onclick = () => {
-      const raw = b.dataset.show === 'raw';
+      const key = b.dataset.show;
       seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
-      const cmp = card.querySelector('video.cmp'), rv = card.querySelector('video.raw');
-      const show = raw ? rv : cmp, hide = raw ? cmp : rv;
-      hide.pause(); hide.hidden = true; show.hidden = false;
-      card.querySelector('.rawnote').hidden = !raw;
-      if (show.preload === 'none') show.preload = 'auto';
-      show.play().catch(() => {});
+      ['cmp', 'raw', 'sft'].forEach(k => {
+        const v = card.querySelector('video.' + k); if (!v) return;
+        if (k === key) { v.hidden = false; if (v.preload === 'none') v.preload = 'auto'; v.play().catch(() => {}); }
+        else { v.pause(); v.hidden = true; }
+      });
+      note.textContent = NOTES[key] || ''; note.hidden = !NOTES[key];
     });
   });
 </script>

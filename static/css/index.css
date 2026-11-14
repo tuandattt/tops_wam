@@ -118,3 +118,5 @@ th.c{text-align:center !important}
 .seg button{font-family:"Google Sans",sans-serif;font-size:.82rem;padding:5px 14px;border:0;background:#fff;color:var(--muted);cursor:pointer}
 .seg button.on{background:#76b900;color:#fff}
 .vcard video[hidden],.rawnote[hidden]{display:none}
+
+.subtitle .u{text-decoration:underline;text-decoration-color:#76b900;text-decoration-thickness:3px;text-underline-offset:4px}
